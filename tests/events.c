@@ -31,7 +31,6 @@
 //
 //========================================================================
 
-#define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -321,12 +320,6 @@ static void window_close_callback(GLFWwindow* window)
     printf("%08x to %i at %0.3f: Window close\n",
            counter++, slot->number, glfwGetTime());
 
-    if (!slot->closeable)
-    {
-        printf("(( closing is disabled, press %s to re-enable )\n",
-               glfwGetKeyName(GLFW_KEY_C, 0));
-    }
-
     glfwSetWindowShouldClose(window, slot->closeable);
 }
 
@@ -400,34 +393,24 @@ static void scroll_callback(GLFWwindow* window, double x, double y)
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     Slot* slot = glfwGetWindowUserPointer(window);
+    const char* name = glfwGetKeyName(key, scancode);
 
-    if (key == GLFW_KEY_UNKNOWN)
+    if (name)
     {
-        printf("%08x to %i at %0.3f: Key (%s) Scancode 0x%04x (with%s) was %s\n",
-                counter++, slot->number, glfwGetTime(),
-                get_key_name(key), scancode,
-                get_mods_name(mods),
-                get_action_name(action));
+        printf("%08x to %i at %0.3f: Key 0x%04x Scancode 0x%04x (%s) (%s) (with%s) was %s\n",
+               counter++, slot->number, glfwGetTime(), key, scancode,
+               get_key_name(key),
+               name,
+               get_mods_name(mods),
+               get_action_name(action));
     }
     else
     {
-        const char* name = glfwGetKeyName(key, scancode);
-        if (name)
-        {
-            printf("%08x to %i at %0.3f: Key 0x%04x (%s) Scancode 0x%04x Name %s (with%s) was %s\n",
-                   counter++, slot->number, glfwGetTime(),
-                   key, get_key_name(key), scancode, name,
-                   get_mods_name(mods),
-                   get_action_name(action));
-        }
-        else
-        {
-            printf("%08x to %i at %0.3f: Key 0x%04x (%s) Scancode 0x%04x (with%s) was %s\n",
-                   counter++, slot->number, glfwGetTime(),
-                   key, get_key_name(key), scancode,
-                   get_mods_name(mods),
-                   get_action_name(action));
-        }
+        printf("%08x to %i at %0.3f: Key 0x%04x Scancode 0x%04x (%s) (with%s) was %s\n",
+               counter++, slot->number, glfwGetTime(), key, scancode,
+               get_key_name(key),
+               get_mods_name(mods),
+               get_action_name(action));
     }
 
     if (action != GLFW_PRESS)
@@ -520,20 +503,6 @@ static void joystick_callback(int jid, int event)
                axisCount,
                buttonCount,
                hatCount);
-
-        if (glfwJoystickIsGamepad(jid))
-        {
-            printf("  Joystick %i (%s) has a gamepad mapping (%s)\n",
-                   jid,
-                   glfwGetJoystickGUID(jid),
-                   glfwGetGamepadName(jid));
-        }
-        else
-        {
-            printf("  Joystick %i (%s) has no gamepad mapping\n",
-                   jid,
-                   glfwGetJoystickGUID(jid));
-        }
     }
     else
     {
@@ -630,7 +599,6 @@ int main(int argc, char** argv)
             glfwTerminate();
             exit(EXIT_FAILURE);
         }
-        glfwSetInputMode(slots[i].window, GLFW_UNLIMITED_MOUSE_BUTTONS, GLFW_TRUE);
 
         glfwSetWindowUserPointer(slots[i].window, slots + i);
 
